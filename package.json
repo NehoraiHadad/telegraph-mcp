@@ -7,19 +7,34 @@
   "bin": {
     "telegraph-mcp": "dist/index.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsc && node dist/index.js"
+    "dev": "tsc && node dist/index.js",
+    "prepublishOnly": "npm run build"
   },
   "keywords": [
     "mcp",
     "telegraph",
     "telegra.ph",
-    "model-context-protocol"
+    "model-context-protocol",
+    "claude",
+    "ai",
+    "llm"
   ],
-  "author": "",
+  "author": "Nehorai Hadad",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NehoraiHadad/telegraph-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/NehoraiHadad/telegraph-mcp/issues"
+  },
+  "homepage": "https://github.com/NehoraiHadad/telegraph-mcp#readme",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "zod": "^3.23.0"

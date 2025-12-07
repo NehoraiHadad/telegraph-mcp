@@ -12,9 +12,30 @@ An MCP (Model Context Protocol) server that exposes the [Telegraph API](https://
 
 ## Installation
 
+### Option 1: Via npm (Recommended)
+
 ```bash
+# With Claude Code
+claude mcp add telegraph -- npx telegraph-mcp
+
+# Or globally
+npm install -g telegraph-mcp
+```
+
+### Option 2: From Source
+
+```bash
+git clone https://github.com/NehoraiHadad/telegraph-mcp.git
+cd telegraph-mcp
 npm install
 npm run build
+claude mcp add telegraph -- node $(pwd)/dist/index.js
+```
+
+## Usage with Claude Code
+
+```bash
+claude mcp add telegraph -- npx telegraph-mcp
 ```
 
 ## Usage with Claude Desktop
