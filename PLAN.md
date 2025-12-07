@@ -3,6 +3,171 @@
 ## Overview
 Create an MCP (Model Context Protocol) server that exposes the Telegraph API (telegra.ph) as MCP tools, allowing Claude and other LLM clients to create and manage Telegraph pages.
 
+---
+
+# VERSION 1.1.0 - ENHANCEMENT PLAN
+
+## Research Summary (Completed)
+
+### Telegraph API Analysis
+- **Base URL**: `https://api.telegra.ph`
+- **Upload URL**: `https://telegra.ph/upload` (undocumented)
+- **Supported upload formats**: jpg, jpeg, png, gif, mp4
+- **File size limit**: ~6MB
+- **Content limit**: 64KB per page
+
+### Current Implementation Status (v1.0.0)
+- All 9 base Telegraph tools implemented
+- HTML to Node conversion working
+- TypeScript with Zod validation
+- MCP SDK integration complete
+
+---
+
+## New Features to Implement
+
+### Task 1: Markdown Support (HIGH PRIORITY)
+**Files to modify:**
+- `src/telegraph-client.ts` - Add `markdownToHtml()` function
+- `src/tools/pages.ts` - Add `format` parameter to schemas
+
+**Markdown features to support:**
+- `#`, `##`, `###`, `####` -> `<h3>`, `<h4>`
+- `**bold**` -> `<b>`
+- `*italic*` -> `<i>`
+- `[text](url)` -> `<a href="url">text</a>`
+- `![alt](src)` -> `<figure><img src><figcaption>alt</figcaption></figure>`
+- `- item` / `* item` -> `<ul><li>item</li></ul>`
+- `1. item` -> `<ol><li>item</li></ol>`
+- `> quote` -> `<blockquote>quote</blockquote>`
+- `` `code` `` -> `<code>code</code>`
+- ` ```code``` ` -> `<pre>code</pre>`
+- `---` -> `<hr/>`
+
+---
+
+### Task 2: Image Upload (HIGH PRIORITY)
+**New file:** `src/tools/media.ts`
+
+**Tool:** `telegraph_upload_image`
+- **Input options:**
+  - `file_path`: Local file path
+  - `base64`: Base64 encoded image data
+  - `content_type`: MIME type (image/jpeg, image/png, image/gif, video/mp4)
+- **Process:** POST multipart/form-data to `https://telegra.ph/upload`
+- **Output:** Full Telegraph URL: `https://telegra.ph/file/{path}`
+
+---
+
+### Task 3: Templates System (MEDIUM PRIORITY)
+**New files:**
+- `src/templates/index.ts` - Template definitions
+- `src/tools/templates.ts` - Template tool
+
+**Templates:**
+1. `blog_post` - Title, intro, body sections, conclusion
+2. `documentation` - Title, overview, code examples, API reference
+3. `article` - Title, subtitle, author byline, body sections
+4. `changelog` - Version header, date, categorized changes
+5. `tutorial` - Title, prerequisites, numbered steps, conclusion
+
+**Tool:** `telegraph_create_from_template`
+
+---
+
+### Task 4: MCP Resources (MEDIUM PRIORITY)
+**File to modify:** `src/index.ts`
+
+**Resources:**
+1. `telegraph://account/{token}/info` - Account details
+2. `telegraph://account/{token}/pages` - Page list
+3. `telegraph://page/{path}` - Page content
+
+**Handlers to add:**
+- `ListResourcesRequestSchema`
+- `ReadResourceRequestSchema`
+
+---
+
+### Task 5: MCP Prompts (LOW PRIORITY)
+**File to modify:** `src/index.ts`
+
+**Prompts:**
+1. `create-blog-post` - Interactive blog post creation guide
+2. `create-documentation` - Documentation structure guide
+3. `summarize-page` - Page summarization workflow
+
+**Handlers to add:**
+- `ListPromptsRequestSchema`
+- `GetPromptRequestSchema`
+
+---
+
+### Task 6: Export/Backup (LOW PRIORITY)
+**New file:** `src/tools/export.ts`
+
+**Tools:**
+1. `telegraph_export_page` - Convert page to Markdown or HTML
+2. `telegraph_backup_account` - Export all pages from account
+
+---
+
+## Parallel Execution Strategy
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      GROUP A                             │
+│            (Can run in parallel)                         │
+├──────────────────┬──────────────────┬──────────────────┤
+│  Task 1:         │  Task 2:         │  Task 3:         │
+│  Markdown        │  Image Upload    │  Templates       │
+│  Support         │                  │  System          │
+└──────────────────┴──────────────────┴──────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                      GROUP B                             │
+│            (Can run in parallel)                         │
+├──────────────────┬──────────────────┬──────────────────┤
+│  Task 4:         │  Task 5:         │  Task 6:         │
+│  MCP Resources   │  MCP Prompts     │  Export/Backup   │
+└──────────────────┴──────────────────┴──────────────────┘
+                           │
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                   FINAL STEPS                            │
+│              (Sequential)                                │
+├─────────────────────────────────────────────────────────┤
+│  • Integration in tools/index.ts                        │
+│  • Build and test                                        │
+│  • Documentation updates                                 │
+│  • Version bump to 1.1.0                                │
+│  • Commit and release                                    │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## File Structure After v1.1.0
+
+```
+src/
+├── index.ts              # + Resources + Prompts handlers
+├── types.ts              # Unchanged
+├── telegraph-client.ts   # + markdownToHtml(), nodesToMarkdown()
+├── templates/
+│   └── index.ts          # NEW: Template definitions
+└── tools/
+    ├── index.ts          # + media, templates, export
+    ├── account.ts        # Unchanged
+    ├── pages.ts          # + format parameter
+    ├── media.ts          # NEW: upload tool
+    ├── templates.ts      # NEW: template tool
+    └── export.ts         # NEW: export tools
+```
+
+---
+
 ## Telegraph API Summary
 
 ### Methods to Implement (9 total)

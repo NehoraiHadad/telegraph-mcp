@@ -10,7 +10,8 @@ import * as telegraph from '../telegraph-client.js';
 export const CreatePageSchema = z.object({
   access_token: z.string().describe('Access token of the Telegraph account'),
   title: z.string().min(1).max(256).describe('Page title (1-256 characters)'),
-  content: z.string().describe('Page content - can be HTML string or JSON array of Node objects'),
+  content: z.string().describe('Page content - can be HTML string, Markdown string, or JSON array of Node objects'),
+  format: z.enum(['html', 'markdown']).optional().default('html').describe('Content format: "html" or "markdown" (default: "html")'),
   author_name: z.string().max(128).optional().describe('Author name (0-128 characters)'),
   author_url: z.string().max(512).optional().describe('Profile link (0-512 characters)'),
   return_content: z.boolean().optional().describe('If true, content field will be returned in the Page object'),
@@ -20,7 +21,8 @@ export const EditPageSchema = z.object({
   access_token: z.string().describe('Access token of the Telegraph account'),
   path: z.string().describe('Path to the page'),
   title: z.string().min(1).max(256).describe('Page title (1-256 characters)'),
-  content: z.string().describe('Page content - can be HTML string or JSON array of Node objects'),
+  content: z.string().describe('Page content - can be HTML string, Markdown string, or JSON array of Node objects'),
+  format: z.enum(['html', 'markdown']).optional().default('html').describe('Content format: "html" or "markdown" (default: "html")'),
   author_name: z.string().max(128).optional().describe('Author name (0-128 characters)'),
   author_url: z.string().max(512).optional().describe('Profile link (0-512 characters)'),
   return_content: z.boolean().optional().describe('If true, content field will be returned in the Page object'),
@@ -65,7 +67,13 @@ export const pageTools = [
         },
         content: {
           type: 'string',
-          description: 'Page content - can be HTML string (e.g., "<p>Hello <b>world</b></p>") or JSON array of Node objects',
+          description: 'Page content - can be HTML string (e.g., "<p>Hello <b>world</b></p>"), Markdown string, or JSON array of Node objects',
+        },
+        format: {
+          type: 'string',
+          description: 'Content format: "html" or "markdown" (default: "html")',
+          enum: ['html', 'markdown'],
+          default: 'html',
         },
         author_name: {
           type: 'string',
@@ -108,7 +116,13 @@ export const pageTools = [
         },
         content: {
           type: 'string',
-          description: 'Page content - can be HTML string or JSON array of Node objects',
+          description: 'Page content - can be HTML string, Markdown string, or JSON array of Node objects',
+        },
+        format: {
+          type: 'string',
+          description: 'Content format: "html" or "markdown" (default: "html")',
+          enum: ['html', 'markdown'],
+          default: 'html',
         },
         author_name: {
           type: 'string',
@@ -220,7 +234,7 @@ export async function handlePageTool(name: string, args: unknown) {
   switch (name) {
     case 'telegraph_create_page': {
       const input = CreatePageSchema.parse(args);
-      const content = telegraph.parseContent(input.content);
+      const content = telegraph.parseContent(input.content, input.format);
       const result = await telegraph.createPage(
         input.access_token,
         input.title,
@@ -239,7 +253,7 @@ export async function handlePageTool(name: string, args: unknown) {
 
     case 'telegraph_edit_page': {
       const input = EditPageSchema.parse(args);
-      const content = telegraph.parseContent(input.content);
+      const content = telegraph.parseContent(input.content, input.format);
       const result = await telegraph.editPage(
         input.access_token,
         input.path,

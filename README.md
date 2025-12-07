@@ -18,11 +18,16 @@ claude mcp add telegraph -- npx telegraph-mcp
 
 ## Features
 
-- **9 Telegraph API tools** covering all Telegraph functionality
+- **15 Telegraph API tools** covering all Telegraph functionality
 - Create and manage Telegraph accounts
 - Create, edit, and retrieve Telegraph pages
 - View statistics for pages
-- HTML content support with automatic conversion to Telegraph's Node format
+- **Markdown support** - Write content in Markdown, automatically converted to Telegraph format
+- **Image upload** - Upload images directly to Telegraph servers
+- **Templates** - Pre-built templates for blog posts, documentation, articles, changelogs, and tutorials
+- **Export/Backup** - Export pages to Markdown or HTML, backup entire accounts
+- **MCP Resources** - Access Telegraph pages as MCP resources
+- **MCP Prompts** - Pre-defined prompts for common tasks
 
 ## Installation
 
@@ -86,11 +91,31 @@ Add this to your Claude Desktop configuration file:
 
 | Tool | Description | Auth Required |
 |------|-------------|---------------|
-| `telegraph_create_page` | Create a new Telegraph page | Yes |
+| `telegraph_create_page` | Create a new Telegraph page (supports Markdown!) | Yes |
 | `telegraph_edit_page` | Edit an existing page | Yes |
 | `telegraph_get_page` | Get a page by path | No |
 | `telegraph_get_page_list` | List all pages for an account | Yes |
 | `telegraph_get_views` | Get view statistics for a page | No |
+
+### Media
+
+| Tool | Description | Auth Required |
+|------|-------------|---------------|
+| `telegraph_upload_image` | Upload image/video to Telegraph servers | No |
+
+### Templates
+
+| Tool | Description | Auth Required |
+|------|-------------|---------------|
+| `telegraph_list_templates` | List all available page templates | No |
+| `telegraph_create_from_template` | Create a page using a template | Yes |
+
+### Export & Backup
+
+| Tool | Description | Auth Required |
+|------|-------------|---------------|
+| `telegraph_export_page` | Export a page to Markdown or HTML | No |
+| `telegraph_backup_account` | Backup all pages from an account | Yes |
 
 ## Example Usage
 
@@ -113,11 +138,66 @@ Use telegraph_create_page with:
 - content: "<p>Hello <b>world</b>!</p><p>This is my first Telegraph page.</p>"
 ```
 
+### Creating a Page with Markdown
+
+```
+Use telegraph_create_page with:
+- access_token: "your_token_here"
+- title: "My Markdown Page"
+- content: "# Hello World\n\nThis is **bold** and *italic*.\n\n- List item 1\n- List item 2"
+- format: "markdown"
+```
+
+### Uploading an Image
+
+```
+Use telegraph_upload_image with:
+- file_path: "/path/to/image.jpg"
+```
+
+Returns the Telegraph URL for use in your pages.
+
+### Using Templates
+
+```
+Use telegraph_create_from_template with:
+- access_token: "your_token_here"
+- template: "blog_post"
+- title: "My Blog Post"
+- data: {
+    "intro": "Welcome to my blog!",
+    "sections": [
+      {"heading": "First Section", "content": "Section content here"}
+    ],
+    "conclusion": "Thanks for reading!"
+  }
+```
+
+Available templates: `blog_post`, `documentation`, `article`, `changelog`, `tutorial`
+
 ### Content Format
 
 The `content` parameter accepts:
+- **Markdown** (with `format: "markdown"`): `"# Hello\n\n**Bold** and *italic*"`
 - **HTML strings**: `"<p>Hello <b>world</b></p>"`
 - **JSON Node arrays**: `[{"tag": "p", "children": ["Hello ", {"tag": "b", "children": ["world"]}]}]`
+
+#### Supported Markdown Syntax
+
+| Syntax | Result |
+|--------|--------|
+| `# Header` | H3 heading |
+| `## Subheader` | H4 heading |
+| `**bold**` | Bold text |
+| `*italic*` | Italic text |
+| `[text](url)` | Link |
+| `![alt](url)` | Image |
+| `- item` | Unordered list |
+| `1. item` | Ordered list |
+| `> quote` | Blockquote |
+| `` `code` `` | Inline code |
+| ` ```code``` ` | Code block |
+| `---` | Horizontal rule |
 
 #### Supported HTML Tags
 
@@ -127,6 +207,26 @@ The `content` parameter accepts:
 
 - `href` - for `<a>` tags
 - `src` - for `<img>`, `<video>`, `<iframe>` tags
+
+## MCP Resources
+
+Access Telegraph pages as MCP resources:
+
+```
+telegraph://page/{path}
+```
+
+Example: `telegraph://page/Sample-Page-12-15`
+
+## MCP Prompts
+
+Available prompts for guided workflows:
+
+| Prompt | Description |
+|--------|-------------|
+| `create-blog-post` | Guide for creating a blog post |
+| `create-documentation` | Guide for creating documentation |
+| `summarize-page` | Summarize an existing page |
 
 ## Development
 

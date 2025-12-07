@@ -329,9 +329,140 @@ export function htmlToNodes(html: string): Node[] {
 }
 
 /**
- * Parse content input - accepts either HTML string or Node array
+ * Convert Markdown to HTML
+ * Supports basic Markdown syntax and converts it to Telegraph-compatible HTML
  */
-export function parseContent(content: string | Node[]): Node[] {
+export function markdownToHtml(markdown: string): string {
+  let html = markdown;
+
+  // Escape special HTML characters in code blocks first to preserve them
+  const codeBlocks: string[] = [];
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    codeBlocks.push(code.trim());
+    return `__CODEBLOCK_${codeBlocks.length - 1}__`;
+  });
+
+  const inlineCodes: string[] = [];
+  html = html.replace(/`([^`]+)`/g, (match, code) => {
+    inlineCodes.push(code);
+    return `__INLINECODE_${inlineCodes.length - 1}__`;
+  });
+
+  // Convert headers (Telegraph only supports h3 and h4)
+  html = html.replace(/^####\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^###\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^##\s+(.+)$/gm, '<h4>$1</h4>');
+  html = html.replace(/^#\s+(.+)$/gm, '<h3>$1</h3>');
+
+  // Convert horizontal rules
+  html = html.replace(/^---+$/gm, '<hr/>');
+
+  // Convert images with caption ![alt](src)
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<figure><img src="$2"/><figcaption>$1</figcaption></figure>');
+
+  // Convert links [text](url)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+
+  // Convert bold **text** or __text__
+  html = html.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  html = html.replace(/__([^_]+)__/g, '<b>$1</b>');
+
+  // Convert italic *text* or _text_ (but not in middle of words)
+  html = html.replace(/(?<!\w)\*([^*]+)\*(?!\w)/g, '<i>$1</i>');
+  html = html.replace(/(?<!\w)_([^_]+)_(?!\w)/g, '<i>$1</i>');
+
+  // Convert blockquotes
+  html = html.replace(/^>\s+(.+)$/gm, '<blockquote>$1</blockquote>');
+
+  // Convert unordered lists
+  const ulLines: string[] = [];
+  let inUl = false;
+  const lines = html.split('\n');
+  const processedLines: string[] = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const ulMatch = line.match(/^[-*]\s+(.+)$/);
+
+    if (ulMatch) {
+      ulLines.push(`<li>${ulMatch[1]}</li>`);
+      inUl = true;
+    } else {
+      if (inUl) {
+        processedLines.push(`<ul>${ulLines.join('')}</ul>`);
+        ulLines.length = 0;
+        inUl = false;
+      }
+      processedLines.push(line);
+    }
+  }
+  if (inUl) {
+    processedLines.push(`<ul>${ulLines.join('')}</ul>`);
+  }
+  html = processedLines.join('\n');
+
+  // Convert ordered lists
+  const olLines: string[] = [];
+  let inOl = false;
+  const lines2 = html.split('\n');
+  const processedLines2: string[] = [];
+
+  for (let i = 0; i < lines2.length; i++) {
+    const line = lines2[i];
+    const olMatch = line.match(/^\d+\.\s+(.+)$/);
+
+    if (olMatch) {
+      olLines.push(`<li>${olMatch[1]}</li>`);
+      inOl = true;
+    } else {
+      if (inOl) {
+        processedLines2.push(`<ol>${olLines.join('')}</ol>`);
+        olLines.length = 0;
+        inOl = false;
+      }
+      processedLines2.push(line);
+    }
+  }
+  if (inOl) {
+    processedLines2.push(`<ol>${olLines.join('')}</ol>`);
+  }
+  html = processedLines2.join('\n');
+
+  // Restore code blocks
+  html = html.replace(/__CODEBLOCK_(\d+)__/g, (match, index) => {
+    return `<pre>${codeBlocks[parseInt(index)]}</pre>`;
+  });
+
+  // Restore inline code
+  html = html.replace(/__INLINECODE_(\d+)__/g, (match, index) => {
+    return `<code>${inlineCodes[parseInt(index)]}</code>`;
+  });
+
+  // Convert paragraphs (lines separated by blank lines)
+  const paragraphs = html.split(/\n\n+/);
+  html = paragraphs
+    .map(para => {
+      const trimmed = para.trim();
+      // Don't wrap if already an HTML tag
+      if (trimmed.startsWith('<') && trimmed.endsWith('>')) {
+        return trimmed;
+      }
+      // Don't wrap empty lines
+      if (!trimmed) {
+        return '';
+      }
+      return `<p>${trimmed}</p>`;
+    })
+    .filter(p => p)
+    .join('\n');
+
+  return html;
+}
+
+/**
+ * Parse content input - accepts either HTML string, Markdown string, or Node array
+ */
+export function parseContent(content: string | Node[], format: 'html' | 'markdown' = 'html'): Node[] {
   if (Array.isArray(content)) {
     return content;
   }
@@ -343,9 +474,15 @@ export function parseContent(content: string | Node[]): Node[] {
       return parsed;
     }
   } catch {
-    // Not JSON, treat as HTML
+    // Not JSON, continue with string parsing
+  }
+
+  // Convert markdown to HTML if format is markdown
+  let htmlContent = content;
+  if (format === 'markdown') {
+    htmlContent = markdownToHtml(content);
   }
 
   // Convert HTML to nodes
-  return htmlToNodes(content);
+  return htmlToNodes(htmlContent);
 }
