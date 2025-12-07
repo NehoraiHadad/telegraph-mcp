@@ -1,6 +1,20 @@
 # Telegraph MCP Server
 
+[![npm version](https://badge.fury.io/js/telegraph-mcp.svg)](https://www.npmjs.com/package/telegraph-mcp)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 An MCP (Model Context Protocol) server that exposes the [Telegraph API](https://telegra.ph/api) as tools for Claude and other LLM clients. This allows AI assistants to create, edit, and manage Telegraph pages programmatically.
+
+## Quick Start
+
+```bash
+npx telegraph-mcp
+```
+
+Or add to Claude Code:
+```bash
+claude mcp add telegraph -- npx telegraph-mcp
+```
 
 ## Features
 
@@ -50,8 +64,8 @@ Add this to your Claude Desktop configuration file:
 {
   "mcpServers": {
     "telegraph": {
-      "command": "node",
-      "args": ["/absolute/path/to/telegraph-mcp/dist/index.js"]
+      "command": "npx",
+      "args": ["-y", "telegraph-mcp"]
     }
   }
 }
