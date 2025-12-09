@@ -5,12 +5,11 @@
 
 import { accountTools, handleAccountTool } from './account.js';
 import { pageTools, handlePageTool } from './pages.js';
-import { mediaTools, handleMediaTool } from './media.js';
 import { templateTools, handleTemplateTool } from './templates.js';
 import { exportTools, handleExportTool } from './export.js';
 
 // Export all tool definitions
-export const allTools = [...accountTools, ...pageTools, ...mediaTools, ...templateTools, ...exportTools];
+export const allTools = [...accountTools, ...pageTools, ...templateTools, ...exportTools];
 
 // Combined tool handler
 export async function handleTool(name: string, args: unknown) {
@@ -24,12 +23,6 @@ export async function handleTool(name: string, args: unknown) {
   const pageResult = await handlePageTool(name, args);
   if (pageResult !== null) {
     return pageResult;
-  }
-
-  // Try media tools
-  const mediaResult = await handleMediaTool(name, args);
-  if (mediaResult !== null) {
-    return mediaResult;
   }
 
   // Try template tools

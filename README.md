@@ -5,6 +5,17 @@
 
 An MCP (Model Context Protocol) server that exposes the [Telegraph API](https://telegra.ph/api) as tools for Claude and other LLM clients. This allows AI assistants to create, edit, and manage Telegraph pages programmatically.
 
+## Related Projects
+
+This is part of the Telegraph tools ecosystem:
+
+| Project | Description | Package |
+|---------|-------------|---------|
+| **telegraph-mcp** (this) | MCP Server for AI assistants (TypeScript) | [![npm](https://img.shields.io/npm/v/telegraph-mcp)](https://www.npmjs.com/package/telegraph-mcp) |
+| [telegraph-mcp-py](https://github.com/NehoraiHadad/telegraph-mcp-py) | MCP Server for AI assistants (Python) | [![PyPI](https://img.shields.io/pypi/v/telegraph-mcp-py)](https://pypi.org/project/telegraph-mcp-py/) |
+| [telegraph-js](https://github.com/NehoraiHadad/telegraph-js) | JavaScript/TypeScript library | [![npm](https://img.shields.io/npm/v/telegraph-api-client)](https://www.npmjs.com/package/telegraph-api-client) |
+| [telegraph-py](https://github.com/NehoraiHadad/telegraph-py) | Python library | [![PyPI](https://img.shields.io/pypi/v/telegraph-api-py)](https://pypi.org/project/telegraph-api-py/) |
+
 ## Quick Start
 
 ```bash
@@ -18,12 +29,11 @@ claude mcp add telegraph -- npx telegraph-mcp
 
 ## Features
 
-- **15 Telegraph API tools** covering all Telegraph functionality
+- **13 Telegraph API tools** covering all Telegraph functionality
 - Create and manage Telegraph accounts
 - Create, edit, and retrieve Telegraph pages
 - View statistics for pages
 - **Markdown support** - Write content in Markdown, automatically converted to Telegraph format
-- **Image upload** - Upload images directly to Telegraph servers
 - **Templates** - Pre-built templates for blog posts, documentation, articles, changelogs, and tutorials
 - **Export/Backup** - Export pages to Markdown or HTML, backup entire accounts
 - **MCP Resources** - Access Telegraph pages as MCP resources
@@ -97,12 +107,6 @@ Add this to your Claude Desktop configuration file:
 | `telegraph_get_page_list` | List all pages for an account | Yes |
 | `telegraph_get_views` | Get view statistics for a page | No |
 
-### Media
-
-| Tool | Description | Auth Required |
-|------|-------------|---------------|
-| `telegraph_upload_image` | Upload image/video to Telegraph servers | No |
-
 ### Templates
 
 | Tool | Description | Auth Required |
@@ -147,15 +151,6 @@ Use telegraph_create_page with:
 - content: "# Hello World\n\nThis is **bold** and *italic*.\n\n- List item 1\n- List item 2"
 - format: "markdown"
 ```
-
-### Uploading an Image
-
-```
-Use telegraph_upload_image with:
-- file_path: "/path/to/image.jpg"
-```
-
-Returns the Telegraph URL for use in your pages.
 
 ### Using Templates
 
